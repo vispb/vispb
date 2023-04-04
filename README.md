@@ -1,7 +1,7 @@
 VisPB
 =====
 
-`VisPB` is a Python-based radio interferometric measurement (visibility) simulator. It is specialized to implement fast visibility calculation under per-antenna perturbations. The calculation is parallelized with `multiprocessing`.
+`VisPB` (Visibility with Perturbed Beams) is a Python-based radio interferometric measurement (visibility) simulator. It is specialized to implement fast visibility calculation under per-antenna perturbations. The calculation is parallelized with `multiprocessing`.
 
 
 
