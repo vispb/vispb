@@ -146,7 +146,7 @@ class Beam_Model(object):
                     Standard deviation at nu0 for the chromatic Gaussian beam in degree.
                     If alpha=0, sigma0 will be a constant standard deviation.
                 nu0: Float
-                    Zero-point frequency to define chromatic Gaussian beam in MHz. sigma = sigma0*(freqs/nu0)^alpha
+                    Zero-point frequency to define chromatic Gaussian beam in Hz. sigma = sigma0*(freqs/nu0)^alpha
                 alpha: Float
                     Power to define the chromatic Gaussian beam. If alpha=0, the beam is achromatic.
                     
