@@ -134,10 +134,10 @@ class Sky_Model(object):
 
                 elif(model.lower() == 'gsm16'):
                     try:
-                        from pygdsm import GlobalSkyModel2016
+                        from pygdsm import GlobalSkyModel16
                     except:
                         try:
-                            from pygdsm import GlobalSkyModel16
+                            from pygdsm import GlobalSkyModel2016
                         except:
                             raise ImportError("pygdsm should be installed to import GlobalSkyModel2016.")
 
