@@ -137,14 +137,14 @@ class Sky_Model(object):
                         from pygdsm import GlobalSkyModel16
                     except:
                         try:
-                            from pygdsm import GlobalSkyModel2016
+                            from pygdsm import GlobalSkyModel2016 as GlobalSkyModel16
                         except:
-                            raise ImportError("pygdsm should be installed to import GlobalSkyModel2016.")
+                            raise ImportError("pygdsm should be installed to import GlobalSkyModel16.")
 
                     if(self.nside is None):
                         raise KeyError('nside should be specified.')
 
-                    gsm = GlobalSkyModel2016(freq_unit='Hz', data_unit='MJysr', resolution='hi')
+                    gsm = GlobalSkyModel16(freq_unit='Hz', data_unit='MJysr', resolution='hi')
                     intensity = np.array(gsm.generate(freqs_evaluate)*1e6, dtype=self.dtype_float)
 
                     ra, dec, flux_density = self._construct_gsm_flux_density(intensity)
