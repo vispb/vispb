@@ -134,12 +134,12 @@ class Sky_Model(object):
 
                 elif(model.lower() == 'gsm16'):
                     try:
-                        try:
-                            from pygdsm import GlobalSkyModel2016
-                        except:
-                            from pygdsm import GlobalSkyModel16
+                        from pygdsm import GlobalSkyModel2016
                     except:
-                        raise ImportError("pygdsm should be installed to import GlobalSkyModel2016.")
+                        try:
+                            from pygdsm import GlobalSkyModel16
+                        except:
+                            raise ImportError("pygdsm should be installed to import GlobalSkyModel2016.")
 
                     if(self.nside is None):
                         raise KeyError('nside should be specified.')
