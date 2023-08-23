@@ -539,7 +539,7 @@ class Vis_Simulator(object):
                             raise KeyError("beam_id1 and beam_id2 should be the same when beam_type = 'power_beam'")
                         for p, pol in enumerate(self.pols):
                             idx_p = np.where(self.beam_model.beam_pol[beam_id1] == pol)[0][0]
-                            power_beam[p] = self.beam_model.beam_intp[beam_id1][idx_p,idx_freqs,:]
+                            power_beam[p] = self.beam_model.beam_intp[beam_id1][0,idx_p,idx_freqs,:]
                             
                     else:
                         raise ValueError("beam_type of beam_id1 and beam_id2 should be the same.")
