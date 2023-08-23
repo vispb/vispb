@@ -454,7 +454,7 @@ class Beam_Model(object):
         if(efield_to_power == True):
             uvb.efield_to_power()
             self.beam_type[beam_id] = 'power_beam'
-            self.beam_pol[beam_id] = uvutils.polnum2str(uvb.polarization_array)
+            self.beam_pol[beam_id] = np.array(uvutils.polnum2str(uvb.polarization_array))
         else:
             self.beam_type[beam_id] = 'efield'
 
