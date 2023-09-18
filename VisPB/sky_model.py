@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import copy
 from pyradiosky import SkyModel
 from astropy import units as u
 from astropy import constants
@@ -98,7 +99,7 @@ class Sky_Model(object):
     def _set_skymodel(self, skymodel, freqs_evaluate):
         skymodel_dict = {}
         for i, model in enumerate(skymodel):
-            if not isinstance(model, dict):
+            if isinstance(model, str):
                 if(model.lower() == 'gleam'):
                     filename = os.path.join(DATA_PATH, 'gleam.skyh5')
                     skymodel_obj = SkyModel()
@@ -166,8 +167,17 @@ class Sky_Model(object):
                                      'ra': skymodel_obj.ra.degree,
                                      'dec': skymodel_obj.dec.degree,
                                      'stokes_I': skymodel_obj.stokes[0].value}
-            else:
+            elif isinstance(model, dict):
                 skymodel_obj = SkyModel(**model)
+                skymodel_obj.at_frequencies(freqs_evaluate)
+
+                skymodel_dict = {'component': np.repeat('catalog{}'.format(i),
+                                                        skymodel_obj.Ncomponents),
+                                 'ra': skymodel_obj.ra.degree,
+                                 'dec': skymodel_obj.dec.degree,
+                                 'stokes_I': skymodel_obj.stokes[0].value}
+            elif isinstance(model, SkyModel):
+                skymodel_obj = copy.deepcopy(model)
                 skymodel_obj.at_frequencies(freqs_evaluate)
 
                 skymodel_dict = {'component': np.repeat('catalog{}'.format(i),
