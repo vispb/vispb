@@ -161,7 +161,7 @@ class Vis_Simulator(object):
             integration_time = np.concatenate(([time_diff_sec[0]],
                                                (time_diff_sec[:-1]+time_diff_sec[1:])*0.5,
                                                [time_diff_sec[-1]]))
-        if isinstance(integration_time int):
+        if isinstance(integration_time, int):
             integration_time = float(integration_time)
         if not isinstance(integration_time, (list, np.ndarray)):
             integration_time = [integration_time]
