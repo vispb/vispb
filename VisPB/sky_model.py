@@ -20,6 +20,7 @@ class Sky_Model(object):
                     skymodel should be a list of sky sourses ("GLEAM" or "GSM08" or 'GSM16')
                     or dictionary containing keywords for pyradiosky SkyModel object
                     or filename that is a readable format of pyradiosky SkyModel object (e.g., skyh5, fhd, txt, vot)
+                    or SkyModel object
                     "GLEAM" combines GLEAM I and II along with the peeled sources listed
                     in Table 2 of Hurley-Walker et al. (2017) and Fornax A treated as two point sources.
                     GSM08 and GSM16 indicate model from Oliveira-Costa et. al. (2008) and Zheng et. al. (2016), respectively.
@@ -37,8 +38,8 @@ class Sky_Model(object):
         if not isinstance(skymodel, (list, np.ndarray, tuple)):
             skymodel = [skymodel]
         for model in skymodel:
-            if not isinstance(model, (str, dict)):
-                raise TypeError('skymodel should a list of string or dictionary')
+            if not isinstance(model, (str, dict, SkyModel)):
+                raise TypeError('skymodel should a list of string or dictionary or SkyModel object')
         
         if not isinstance(freqs, (list, np.ndarray)):
             freqs = [freqs]
@@ -217,6 +218,41 @@ class Sky_Model(object):
             raise ValueError("freq_ref should be one of the values in sky_model.freqs")
             
         idx_delete = np.where(self.stokes_I[idx_freq[0], idx_match] < flux_density_limit)[0]
+        self.component = np.delete(self.component, idx_match[idx_delete])
+        self.ra = np.delete(self.ra, idx_match[idx_delete])
+        self.dec = np.delete(self.dec, idx_match[idx_delete])
+        self.stokes_I = np.delete(self.stokes_I, idx_match[idx_delete], axis=1)
+        
+        
+        
+    def set_sky_cut(self, component, ra_range=(0, 360), dec_range=(-90, 90)):
+        '''
+            Select sources inside a certain sky patch corresponding "component".
+            
+            Parameters:
+            ----------------------------------------------------------------------------------------
+                component: Str
+                    Sky component that the flux_limit is applied to.
+                ra_range: Tuple
+                    Minimum and maximum range for the RA cut in degree.
+                dec_range: Tuple
+                    Minimum and maximum range for the Dec cut in degree.
+        '''
+        
+        idx_match = np.where(self.component == component)[0]
+
+        if(ra_range[0] >= ra_range[1]):
+            raise ValueError("ra_range should be given in an accending order.")
+        if(dec_range[0] >= dec_range[1]):
+            raise ValueError("dec_range should be given in an accending order.")
+            
+        idx_delete = np.where(~(
+                                  (self.ra[idx_match] >= ra_range[0])
+                                & (self.ra[idx_match] <= ra_range[1])
+                                & (self.dec[idx_match] >= dec_range[0])
+                                & (self.dec[idx_match] <= dec_range[1])
+                               )
+                             )[0]
         self.component = np.delete(self.component, idx_match[idx_delete])
         self.ra = np.delete(self.ra, idx_match[idx_delete])
         self.dec = np.delete(self.dec, idx_match[idx_delete])
