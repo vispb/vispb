@@ -19,7 +19,7 @@ from . import Beam_Model
 class Vis_Simulator(object):
     
     def __init__(self, sky_model, beam_model, antenna_config,
-                 ants=None, pols=['xx'], telescope_lat_lon_alt_deg=None,
+                 ants=None, pols=['xx'], baseline_select=None, telescope_lat_lon_alt_deg=None,
                  use_TETE=False, horizon_cut=0., kx=3, ky=3, x_orientation='EAST',
                  Nthread=10, memory_limit=50, dtype_float=np.float64):
         '''
@@ -41,6 +41,9 @@ class Vis_Simulator(object):
                     None means all antennas in the antenna_config will be used.
                 pols: List
                     Polarization array that can contain ['xx', 'yy', 'xy', 'yx'].
+                baseline_select: List
+                    List of tuple of antenna pairs to select baselines for visibility calculation.
+                    Ex) baseline_select = [(0,1), (0,2)]
                 telescope_lat_lon_alt_deg: Float
                     Latitude and longitude of the telescope in degree, and altitude in meter.
                     If None, HERA site location will be used.
@@ -94,9 +97,14 @@ class Vis_Simulator(object):
                     for ant2 in ants
                     if ant1 <= ant2}
         
+        if(baseline_select is None):
+            bls_use = list(bls_dict.keys())
+        else:
+            bls_use = baseline_select
+            
         bls_num = np.asarray([uvutils.antnums_to_baseline(ant1, ant2, len(ants))
-                              for ant1, ant2 in list(bls_dict.keys())])
-        bls_vec = np.asarray(list(bls_dict.values()))
+                              for ant1, ant2 in bls_use])
+        bls_vec = np.asarray([bls_dict[bl] for bl in bls_use])
         bls_red_grps, bls_unique_vecs, bls_len = uvutils.get_baseline_redundancies(bls_num, bls_vec)
         
         bls_red_grps = [[uvutils.baseline_to_antnums(bl, len(ants)) for bl in bls]
@@ -115,8 +123,9 @@ class Vis_Simulator(object):
         setattr(self, 'bls_red_grps', bls_red_grps)
         setattr(self, 'Nbls_unique', len(bls_red_grps))
         setattr(self, 'bls_ugrp_dict', bls_ugrp_dict)
+        setattr(self, 'bls_use', bls_use)
         setattr(self, 'unique_component', unique_component)
-        setattr(self, '__version__', 'v0.01')
+        setattr(self, '__version__', 'v0.02')
         
         
         
@@ -252,13 +261,13 @@ class Vis_Simulator(object):
     def _consistency_check(self):
                 
         if not np.array_equal(self.sky_model.freqs, self.beam_model.freqs):
-            raise ValueError('freqs in sky_model and beam_model should be the same')
+            raise ValueError('freqs in sky_model and beam_model should be the same.')
             
         if not isinstance(self.sky_model, Sky_Model):
-            raise TypeError('sky_model should be Sky_Model object')
+            raise TypeError('sky_model should be Sky_Model object.')
             
         if not isinstance(self.beam_model, Beam_Model):
-            raise TypeError('beam_model should be Beam_Model object')
+            raise TypeError('beam_model should be Beam_Model object.')
             
         for beam_id in self.beam_model.beam_dict.keys():
             if self.x_orientation.upper() != self.beam_model.beam_x_orientation[beam_id].upper():
@@ -279,6 +288,8 @@ class Vis_Simulator(object):
             print("'telescope_lat_lon_alt_deg' is not specified. HERA site location will be used.")
             self.telescope_lat_lon_alt_deg = [-30.721526120689315, 21.428303826863015, 1051.6900000050664]
         
+        if not isinstance(self.baseline_select, (type(None), list, np.ndarray)):
+            raise TypeError("'baseline_select' should be a list of tuple.")
         
         
     def _estimate_memory(self, time_mean):
@@ -409,8 +420,6 @@ class Vis_Simulator(object):
         indices = np.arange(N_jobs)
 
         job_info = {}
-        job_info['bls_index'] = []
-        
         job_info['rank'] = rank
         job_info['bls_index'] = indices[rank::Nthread]
 
@@ -448,7 +457,7 @@ class Vis_Simulator(object):
         vis_model = OrderedDict()
         for i, component in enumerate(self.unique_component):
             vis_comp = OrderedDict()
-            for bl in self.bls_dict.keys():
+            for bl in self.bls_use:
                 for pol in self.pols:
                     key = (bl + (pol,))
                     vis_comp[key] = vis_dict[key][i]
