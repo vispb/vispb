@@ -87,10 +87,6 @@ class Vis_Simulator(object):
             ants = list(antenna_config.keys())
         else:
             self.antenna_config = {ant: antenna_config[ant] for ant in ants}
-        for ant in ants:
-            if(ant not in beam_model.which_beam.keys()):
-                raise KeyError("antenna {} does not have an assigned beam".format(ant))
-        ants = np.asarray(ants)
                 
         bls_dict = {(ant1, ant2): np.array(antenna_config[ant2])-np.array(antenna_config[ant1])
                     for ant1 in ants
@@ -101,6 +97,12 @@ class Vis_Simulator(object):
             bls_use = list(bls_dict.keys())
         else:
             bls_use = baseline_select
+            ants = np.unique([[bl[0], bl[1]] for bl in bls_use])
+            
+        for ant in ants:
+            if(ant not in beam_model.which_beam.keys()):
+                raise KeyError("antenna {} does not have an assigned beam".format(ant))
+        ants = np.asarray(ants)
             
         bls_num = np.asarray([uvutils.antnums_to_baseline(ant1, ant2, len(ants))
                               for ant1, ant2 in bls_use])
@@ -618,11 +620,13 @@ class Vis_Simulator(object):
             uvd.channel_width = 122070.3125
         uvd.antenna_diameters = 14.+np.zeros(len(uvd.antenna_numbers))
         uvd.vis_units = 'Jy'
-        uvd.Nbls = len(self.bls_dict)
+        uvd.Nbls = len(self.bls_use)
         uvd.x_orientation = self.x_orientation
         lat, lon, alt = uvd.telescope_location_lat_lon_alt_degrees
-        ant_pos = np.asarray(list(self.antenna_config.values()))
-        uvd.antenna_positions = uvutils.ECEF_from_ENU(ant_pos, np.radians(lat), np.radians(lon), alt) - uvd.telescope_location
+        ant_pos = self.antenna_config
+        ant_pos_select = [ant_pos[ant] for ant in self.ants]
+        uvd.antenna_positions = uvutils.ECEF_from_ENU(ant_pos_select, np.radians(lat), np.radians(lon), alt) \
+                              - uvd.telescope_location
         
         uvd.Ntimes = self.time_array.size
         uvd.Nblts = uvd.Nbls*uvd.Ntimes
@@ -633,13 +637,12 @@ class Vis_Simulator(object):
         ant_1_array, ant_2_array = [], []
         baseline_array = []
         uvw_array = []
-        for i1, ant1 in enumerate(self.ants):
-            for i2, ant2 in enumerate(self.ants):
-                if(ant2 >= ant1):
-                    ant_1_array.append(ant1)
-                    ant_2_array.append(ant2)
-                    baseline_array.append(uvd.antnums_to_baseline(ant1,ant2))
-                    uvw_array.append(list(ant_pos[i2]-ant_pos[i1]))
+        for bl in self.bls_use:
+            ant1, ant2 = bl
+            ant_1_array.append(ant1)
+            ant_2_array.append(ant2)
+            baseline_array.append(uvd.antnums_to_baseline(ant1,ant2))
+            uvw_array.append(list(np.array(ant_pos[ant2])-np.array(ant_pos[ant1])))
         uvd.ant_1_array = np.tile(ant_1_array, uvd.Ntimes)
         uvd.ant_2_array = np.tile(ant_2_array, uvd.Ntimes)
         uvd.baseline_array = np.tile(baseline_array, uvd.Ntimes)
@@ -649,14 +652,13 @@ class Vis_Simulator(object):
         uvd.nsample_array = np.ones((uvd.Nblts,uvd.Nspws,uvd.Nfreqs,uvd.Npols), dtype=float)
 
         for ipol, pol in enumerate(self.pols):
-            for ant1 in self.ants:
-                for ant2 in self.ants:
-                    if(ant2 >= ant1):
-                        inds = uvd.antpair2ind(ant1, ant2)
-                        key = (ant1, ant2, pol)
-                        data_blts = 0
-                        for comp in component:
-                            data_blts += self.vis_model[comp][key][:,:]
-                        uvd.data_array[inds,0,:,ipol] = data_blts
+            for bl in self.bls_use:
+                ant1, ant2 = bl
+                inds = uvd.antpair2ind(ant1, ant2)
+                key = (ant1, ant2, pol)
+                data_blts = 0
+                for comp in component:
+                    data_blts += self.vis_model[comp][key][:,:]
+                uvd.data_array[inds,0,:,ipol] = data_blts
 
         return uvd
