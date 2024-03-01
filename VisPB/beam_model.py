@@ -412,9 +412,6 @@ class Beam_Model(object):
                 
         if(beam_id in self.beam_dict.keys()):
             raise ValueError('beam_id: {} is already occupied. Pick other beam_id'.format(beam_id))
-            
-        if not Path(beam_filename).is_file():
-            raise TypeError('beam_filename should be a string path to the beam file')
         
         if Path(beam_filename).is_file():
             uvb = UVBeam()
