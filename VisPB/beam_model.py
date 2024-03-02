@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import copy
 from pyuvdata import UVBeam
 from pyuvdata import utils as uvutils
 import scipy
@@ -417,7 +418,7 @@ class Beam_Model(object):
             uvb = UVBeam()
             uvb.read_beamfits(beam_filename)
         elif isinstance(beam_filename, UVBeam):
-            pass
+            uvb = copy.deepcopy(beam_filename)
         else:
             raise TypeError('beam_filename should be either beam_file path or UVBeam object')
             
