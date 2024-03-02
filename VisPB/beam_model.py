@@ -413,7 +413,7 @@ class Beam_Model(object):
         if(beam_id in self.beam_dict.keys()):
             raise ValueError('beam_id: {} is already occupied. Pick other beam_id'.format(beam_id))
         
-        if Path(beam_filename).is_file():
+        if isinstance(beam_filename, str):
             uvb = UVBeam()
             uvb.read_beamfits(beam_filename)
         elif isinstance(beam_filename, UVBeam):
