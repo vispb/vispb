@@ -1,9 +1,0 @@
-numpy
-scipy
-astropy
-matplotlib
-healpy
-pyuvdata
-pyradiosky
-numexpr
-tqdm
