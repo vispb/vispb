@@ -463,8 +463,11 @@ class Beam_Model(object):
         uvb = uvb.interp(freq_array=self.freqs, new_object=True, check_azza_domain=False)
 
         self.beam_dict[beam_id] = uvb
-        self.beam_kind[beam_id] = 'cst simulated beam: {}'.format(os.path.basename(beam_filename))
-
+        if isinstance(beam_filename, str):
+            self.beam_kind[beam_id] = 'cst simulated beam: {}'.format(os.path.basename(beam_filename))
+        else:
+            self.beam_kind[beam_id] = 'cst simulated beam: {}'.format(beam_id)
+            
         for ant_id_ in ant_id:
             self.which_beam[ant_id_] = beam_id
             
