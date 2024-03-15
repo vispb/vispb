@@ -104,7 +104,10 @@ class Sky_Model(object):
                     filename = os.path.join(DATA_PATH, 'gleam.skyh5')
                     skymodel_obj = SkyModel()
                     skymodel_obj.read(filename)
-                    skymodel_obj.at_frequencies(freqs_evaluate)
+                    skymodel_obj.at_frequencies(freqs_evaluate,
+                                                run_check=False,
+                                                check_extra=False,
+                                                run_check_acceptability=False)
                     skymodel_dict = {'component': np.repeat('gleam', skymodel_obj.Ncomponents),
                                      'ra': skymodel_obj.ra.degree,
                                      'dec': skymodel_obj.dec.degree,
@@ -160,7 +163,10 @@ class Sky_Model(object):
                 elif(Path(model).is_file()):
                     skymodel_obj = SkyModel()
                     skymodel_obj.read(model)
-                    skymodel_obj.at_frequencies(freqs_evaluate)
+                    skymodel_obj.at_frequencies(freqs_evaluate,
+                                                run_check=False,
+                                                check_extra=False,
+                                                run_check_acceptability=False)
 
                     skymodel_dict = {'component': np.repeat('catalog{}'.format(i),
                                                             skymodel_obj.Ncomponents),
@@ -169,7 +175,10 @@ class Sky_Model(object):
                                      'stokes_I': skymodel_obj.stokes[0].value}
             elif isinstance(model, dict):
                 skymodel_obj = SkyModel(**model)
-                skymodel_obj.at_frequencies(freqs_evaluate)
+                skymodel_obj.at_frequencies(freqs_evaluate,
+                                            run_check=False,
+                                            check_extra=False,
+                                            run_check_acceptability=False)
 
                 skymodel_dict = {'component': np.repeat('catalog{}'.format(i),
                                                         skymodel_obj.Ncomponents),
@@ -178,7 +187,10 @@ class Sky_Model(object):
                                  'stokes_I': skymodel_obj.stokes[0].value}
             elif isinstance(model, SkyModel):
                 skymodel_obj = copy.deepcopy(model)
-                skymodel_obj.at_frequencies(freqs_evaluate)
+                skymodel_obj.at_frequencies(freqs_evaluate,
+                                            run_check=False,
+                                            check_extra=False,
+                                            run_check_acceptability=False)
 
                 skymodel_dict = {'component': np.repeat('catalog{}'.format(i),
                                                         skymodel_obj.Ncomponents),
